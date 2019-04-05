@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta content="initial-scale=1, shrink-to-fit=no, width=device-width" name="viewport">
+    <style type="text/css">
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            font-family: "微软雅黑";
+        }
+
+        #allmap {
+            height: 100%;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #rightSpace {
+            width: 30%;
+            float: left;
+            overflow: scroll;
+        }
+
+        #result {
+            width: 100%;
+            font-size: 12px;
+        }
+
+        dl,
+        dt,
+        dd,
+        ul,
+        li {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        p {
+            font-size: 12px;
+        }
+
+        dt {
+            font-size: 14px;
+            font-family: "微软雅黑";
+            font-weight: bold;
+            border-bottom: 1px dotted #000;
+            padding: 5px 0 5px 5px;
+            margin: 5px 0;
+        }
+
+        dd {
+            padding: 5px 0 0 5px;
+        }
+
+        li {
+            line-height: 28px;
+        }
+
+        .anchorBL {
+            display: none;
+        }
+
+        #map {
+            height: 100%;
+        }
+
+        #l-map {
+            height: 300px;
+            width: 100%;
+        }
+
+        /* .BMap_vectex {
+            width: 8px !important;
+            height: 8px !important;
+        } */
+
+        /* .BMapLib_Drawing_panel {
+            margin-right: 100px !important;
+        } */
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=rdxXZeTCdtOAVL3DlNzYkXas9nR21KNu">
+    </script>
+    <!--加载鼠标绘制工具-->
+    <script type="text/javascript" src="./assets/js/DrawingManager_min.js"></script>
+    <link rel="stylesheet" href="./assets/css/DrawingManager_min.css" />
+    <!--加载检索信息窗口-->
+    <script type="text/javascript" src="./assets/js/SearchInfoWindow_min.js"></script>
+    <link rel="stylesheet" href="./assets/css/SearchInfoWindow_min.css" />
+
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+
+    <!-- CSS -->
+    <!-- Add Material font (Roboto) and Material icon as needed -->
+    <link
+        href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i|Roboto+Mono:300,400,700|Roboto+Slab:300,400,700"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Add Material CSS, replace Bootstrap CSS -->
+    <link href="./assets/css/material.min.css" rel="stylesheet">
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script> -->
+
+    <!-- Then Material JavaScript on top of Bootstrap JavaScript -->
+    <script src="./assets/js/material.min.js"></script>
+    <title>区域选择工具</title>
+</head>
+
+<body>
+    <div id="allmap" class="col-lg-8">
+        <div id="map" style="height:100%;-webkit-transition: all 0.5s ease-in-out;transition: all 0.5s ease-in-out;">
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="row">
+            <div class="col-lg-12 mt-3">
+                <input type="text" class="form-control" placeholder="请输入关键字进行搜索" id="suggestId" size="20" value="百度">
+            </div>
+        </div>
+        <div id="result" class="mt-3">
+            <input type="button" class="btn btn-info" value="获取绘制的覆盖物个数" onclick="alert(overlays.length)" />
+            <input type="button" class="btn btn-danger" value="清除重新绘制" onclick="clearAll()" />
+            <input type="button" class="btn btn-info" value="获取多边形的顶点坐标" onclick="getPoint()" /><br />
+            <input type="button" class="btn btn-primary" value="开启线、面编辑功能" onclick="Editing('enable')" />
+            <input type="button" class="btn btn-primary" value="关闭线、面编辑功能" onclick="Editing('disable')" />
+            <!-- <input type="button" value="显示原有多边形" onclick="showPolygon(this)" /><br /> -->
+
+            <!-- <input type="button" value="画多边形" onclick="draw(BMAP_DRAWING_POLYGON)" />
+            <input type="button" value="画矩形" onclick="draw(BMAP_DRAWING_RECTANGLE)" />
+            <input type="button" value="画线" onclick="draw(BMAP_DRAWING_POLYLINE)" /> -->
+            <!-- <input type="button"  value="画点" onclick="draw(BMAP_DRAWING_MARKER)" />-->
+            <span></span>
+            <div class="row">
+                <div class="col-lg-12">
+                    <p class="text-left">右键获取任意点的经纬度</p>
+                </div>
+                <div class="col-lg-12">
+                    <div class="input-group mb-3">
+                        <input type="text" id="pointGeo" class="form-control" placeholder="经纬度">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-info" onclick="copyGeo()">复制</button>
+                        </div>
+                    </div>
+                    <!-- <div class="input-group">
+                        <input id="pointGeo" type="text" class="form-control" placeholder="经纬度" value="">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" onclick="copyGeo()">复制</button>
+                        </span>
+                    </div> -->
+                </div>
+
+            </div>
+        </div>
+        <div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto; display:none;z-index: 99">
+        </div>
+        <div id="resultShape"></div>
+        <div id="shape">坐标为</div>
+    </div>
+    <!-- <div id="allmap" style="overflow:hidden;zoom:1;position:relative;">
+    </div>
+    <div id="rightSpace">
+    </div> -->
+
+    <script type="text/javascript">
+        function $(id) {
+            return document.getElementById(id);
+        }
+
+        // 百度地图API功能
+        var map = new BMap.Map('map', {
+            enableMapClick: false, // 环境物不可点击
+            mapType: BMAP_HYBRID_MAP // 默认显示混合地图
+        });
+        var poi = new BMap.Point(108.720027, 34.298497);
+        map.centerAndZoom(poi, 16); // 添加中心点，及缩放级别
+        map.enableScrollWheelZoom(true); // 开启鼠标滚动缩放
+        map.addControl(new BMap.NavigationControl()); // 显示全景的导航控件
+        map.addControl(new BMap.MapTypeControl({
+            type: BMAP_MAPTYPE_CONTROL_HORIZONTAL, // 按钮水平方式展示，默认采用此类型展示
+            mapTypes: [BMAP_NORMAL_MAP, BMAP_HYBRID_MAP], // 控件展示的地图类型
+            anchor: BMAP_ANCHOR_BOTTOM_RIGHT
+        }));
+        var overlays = [];
+        var overlaycomplete = function (e) {
+            overlays.push(e.overlay);
+        };
+        var styleOptions = {
+            strokeColor: "blue", // 边线颜色。
+            fillColor: "", // 填充颜色。当参数为空时，圆形将没有填充效果。
+            strokeWeight: 2, // 边线的宽度，以像素为单位。
+            strokeOpacity: 0.8, // 边线透明度，取值范围0 - 1。
+            fillOpacity: 0.6, // 填充的透明度，取值范围0 - 1。
+            strokeStyle: 'dashed' // 边线的样式，solid或dashed。
+        }
+
+        //实例化鼠标绘制工具
+        var drawingManager = new BMapLib.DrawingManager(map, {
+            isOpen: false, // 是否开启绘制模式
+            enableDrawingTool: true, // 是否显示工具栏
+            drawingToolOptions: {
+                anchor: BMAP_ANCHOR_TOP_RIGHT, // 位置
+                offset: new BMap.Size(5, 5), // 偏离值
+                drawingModes: [BMAP_DRAWING_POLYLINE, BMAP_DRAWING_POLYGON], // 设置只显示画折线和多边形
+            },
+            polylineOptions: styleOptions, // 线的样式
+            polygonOptions: styleOptions, // 多边形的样式
+        });
+
+        // 添加鼠标绘制工具监听事件，用于获取绘制结果
+        drawingManager.addEventListener('overlaycomplete', overlaycomplete);
+
+        map.addEventListener("rightclick", function (e) {
+            // if (confirm(e.point.lng + "," + e.point.lat)) {
+            document.getElementById("pointGeo").value = e.point.lng + "," + e.point.lat;
+
+            // $("#pointGeo").val(e.point.lng + "," + e.point.lat);
+            $("shape").innerHTML = $("shape").innerHTML + " <br/>(" + e.point.lng + "," + e.point.lat + ")";
+            // }
+        });
+
+        function copyGeo() {
+            var point = document.getElementById("pointGeo");
+            point.select(); // 选择对象  
+            document.execCommand("Copy"); // 执行浏览器复制命令  
+            alert("复制成功！");
+        }
+
+        function draw(type) {
+            drawingManager.open();
+            drawingManager.setDrawingMode(type);
+        }
+
+        function clearAll() {
+            for (var i = 0; i < overlays.length; i++) {
+                map.removeOverlay(overlays[i]);
+            }
+            overlays.length = 0
+        }
+
+        function getPoint() {
+            $("resultShape").innerHTML = '';
+            for (var i = 0; i < overlays.length; i++) {
+                var overlay = overlays[i].getPath();
+                $("resultShape").innerHTML = $("resultShape").innerHTML + overlay.length + '边形:<br/>';
+                for (var j = 0; j < overlay.length; j++) {
+                    var grid = overlay[j];
+                    $("resultShape").innerHTML = $("resultShape").innerHTML + (j + 1) + "个点:(" + grid.lng + "," + grid
+                        .lat + ");<br/>";
+                }
+            }
+        }
+
+        function Editing(state) {
+            for (var i = 0; i < overlays.length; i++) {
+                state == 'enable' ? overlays[i].enableEditing() : overlays[i].disableEditing();
+            }
+        }
+
+        function showPolygon(btn) {
+            var polygon = new BMap.Polygon([
+                new BMap.Point(113.941853, 22.530777),
+                new BMap.Point(113.940487, 22.527789),
+                new BMap.Point(113.94788, 22.527597),
+                new BMap.Point(113.947925, 22.530618)
+            ], styleOptions); //创建多边形
+            map.addOverlay(polygon); //增加多边形
+            // overlays.push(polygon); //是否把该图像加入到编辑和删除行列
+            btn.setAttribute('disabled', 'false');
+            showText();
+        }
+
+        function showText() {
+            var opts = {
+                position: new BMap.Point(113.941853, 22.530777), // 指定文本标注所在的地理位置
+                offset: new BMap.Size(30, 30) //设置文本偏移量
+            }
+            var label = new BMap.Label("不可编辑", opts); // 创建文本标注对象
+            label.setStyle({
+                color: "black",
+                fontSize: "16px",
+                fillColor: "red", //填充颜色。当参数为空时，圆形将没有填充效果。
+            });
+            map.addOverlay(label);
+        }
+
+
+        var ac = new BMap.Autocomplete( //建立一个自动完成的对象
+            {
+                "input": "suggestId",
+                "location": map
+            });
+
+        ac.addEventListener("onhighlight", function (e) { //鼠标放在下拉列表上的事件
+            var str = "";
+            var _value = e.fromitem.value;
+            var value = "";
+            if (e.fromitem.index > -1) {
+                value = _value.province + _value.city + _value.district + _value.street + _value.business;
+            }
+            str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
+
+            value = "";
+            if (e.toitem.index > -1) {
+                _value = e.toitem.value;
+                value = _value.province + _value.city + _value.district + _value.street + _value.business;
+            }
+            str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
+            $("searchResultPanel").innerHTML = str;
+        });
+
+        var myValue;
+        ac.addEventListener("onconfirm", function (e) { //鼠标点击下拉列表后的事件
+            var _value = e.item.value;
+            myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
+            $("searchResultPanel").innerHTML = "onconfirm<br />index = " + e.item.index + "<br />myValue = " +
+                myValue;
+
+            setPlace();
+        });
+
+        function setPlace() {
+            map.clearOverlays(); //清除地图上所有覆盖物
+            function myFun() {
+                var pp = local.getResults().getPoi(0).point; //获取第一个智能搜索的结果
+                map.centerAndZoom(pp, 18);
+                map.addOverlay(new BMap.Marker(pp)); //添加标注
+            }
+            var local = new BMap.LocalSearch(map, { //智能搜索
+                onSearchComplete: myFun
+            });
+            local.search(myValue);
+        }
+    </script>
+</body>
+
+</html>
