@@ -129,12 +129,19 @@
             </div>
         </div>
         <div id="result" class="mt-3">
-            <input type="button" class="btn btn-info" value="获取绘制的覆盖物个数" onclick="alert(overlays.length)" />
-            <input type="button" class="btn btn-danger" value="清除重新绘制" onclick="clearAll()" />
-            <input type="button" class="btn btn-info" value="获取多边形的顶点坐标" onclick="getPoint()" /><br />
-            <input type="button" class="btn btn-primary" value="开启线、面编辑功能" onclick="Editing('enable')" />
-            <input type="button" class="btn btn-primary" value="关闭线、面编辑功能" onclick="Editing('disable')" />
-            <!-- <input type="button" value="显示原有多边形" onclick="showPolygon(this)" /><br /> -->
+            <div class="row">
+                <div class="col-lg-12 mt-3">
+                    <!-- <input type="button" class="btn btn-info" value="获取绘制的覆盖物个数" onclick="alert(overlays.length)" /> -->
+                    <input type="button" class="btn btn-danger" value="清除重新绘制" onclick="clearAll()" />
+                    <input type="button" class="btn btn-info" value="获取坐标" onclick="getPoint()" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 mt-3">
+                    <input type="button" class="btn btn-primary" value="开启点、线、面编辑" onclick="Editing('enable')" />
+                    <input type="button" class="btn btn-primary" value="关闭点、线、面编辑" onclick="Editing('disable')" />
+                </div>
+            </div>
 
             <!-- <input type="button" value="画多边形" onclick="draw(BMAP_DRAWING_POLYGON)" />
             <input type="button" value="画矩形" onclick="draw(BMAP_DRAWING_RECTANGLE)" />
@@ -142,10 +149,10 @@
             <!-- <input type="button"  value="画点" onclick="draw(BMAP_DRAWING_MARKER)" />-->
             <span></span>
             <div class="row">
-                <div class="col-lg-12">
-                    <p class="text-left">右键获取任意点的经纬度</p>
+                <div class="col-lg-12 mt-3">
+                    <p class="text-left mb-0">右键获取任意点的经纬度</p>
                 </div>
-                <div class="col-lg-12">
+                <div class="col-lg-12 mt-0">
                     <div class="input-group mb-3">
                         <input type="text" id="pointGeo" class="form-control" placeholder="经纬度">
                         <div class="input-group-append">
@@ -193,7 +200,6 @@
         }));
         var overlays = [];
         var overlaycomplete = function (e) {
-            console.log(e)
             e.overlay.drawingMode = e.drawingMode;
             overlays.push(e.overlay);
         };
@@ -279,7 +285,11 @@
 
         function Editing(state) {
             for (var i = 0; i < overlays.length; i++) {
-                state == 'enable' ? overlays[i].enableEditing() : overlays[i].disableEditing();
+                if (overlays[i].drawingMode !== 'marker') {
+                    state == 'enable' ? overlays[i].enableEditing() : overlays[i].disableEditing();
+                } else {
+                    state == 'enable' ? overlays[i].enableDragging() : overlays[i].disableDragging();
+                }
             }
         }
 
