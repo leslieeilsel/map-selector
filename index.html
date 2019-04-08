@@ -193,15 +193,17 @@
         }));
         var overlays = [];
         var overlaycomplete = function (e) {
+            console.log(e)
+            e.overlay.drawingMode = e.drawingMode;
             overlays.push(e.overlay);
         };
         var styleOptions = {
-            strokeColor: "blue", // 边线颜色。
-            fillColor: "", // 填充颜色。当参数为空时，圆形将没有填充效果。
-            strokeWeight: 2, // 边线的宽度，以像素为单位。
+            strokeColor: "#f85007", // 边线颜色。
+            fillColor: "#f85007", // 填充颜色。当参数为空时，圆形将没有填充效果。
+            fillOpacity: 0.1, // 填充的透明度，取值范围0 - 1。
+            strokeWeight: 4, // 边线的宽度，以像素为单位。
             strokeOpacity: 0.8, // 边线透明度，取值范围0 - 1。
-            fillOpacity: 0.6, // 填充的透明度，取值范围0 - 1。
-            strokeStyle: 'dashed' // 边线的样式，solid或dashed。
+            strokeStyle: 'solid' // 边线的样式，solid或dashed。
         }
 
         //实例化鼠标绘制工具
@@ -211,7 +213,7 @@
             drawingToolOptions: {
                 anchor: BMAP_ANCHOR_TOP_RIGHT, // 位置
                 offset: new BMap.Size(5, 5), // 偏离值
-                drawingModes: [BMAP_DRAWING_POLYLINE, BMAP_DRAWING_POLYGON], // 设置只显示画折线和多边形
+                drawingModes: [BMAP_DRAWING_MARKER, BMAP_DRAWING_POLYLINE, BMAP_DRAWING_POLYGON], // 设置只显示画折线和多边形
             },
             polylineOptions: styleOptions, // 线的样式
             polygonOptions: styleOptions, // 多边形的样式
@@ -220,6 +222,7 @@
         // 添加鼠标绘制工具监听事件，用于获取绘制结果
         drawingManager.addEventListener('overlaycomplete', overlaycomplete);
 
+        // 鼠标右键事件
         map.addEventListener("rightclick", function (e) {
             // if (confirm(e.point.lng + "," + e.point.lat)) {
             document.getElementById("pointGeo").value = e.point.lng + "," + e.point.lat;
@@ -229,10 +232,11 @@
             // }
         });
 
+        // 复制点坐标
         function copyGeo() {
             var point = document.getElementById("pointGeo");
-            point.select(); // 选择对象  
-            document.execCommand("Copy"); // 执行浏览器复制命令  
+            point.select(); // 选择对象
+            document.execCommand("Copy"); // 执行浏览器复制命令
             alert("复制成功！");
         }
 
@@ -251,12 +255,24 @@
         function getPoint() {
             $("resultShape").innerHTML = '';
             for (var i = 0; i < overlays.length; i++) {
-                var overlay = overlays[i].getPath();
-                $("resultShape").innerHTML = $("resultShape").innerHTML + overlay.length + '边形:<br/>';
-                for (var j = 0; j < overlay.length; j++) {
-                    var grid = overlay[j];
-                    $("resultShape").innerHTML = $("resultShape").innerHTML + (j + 1) + "个点:(" + grid.lng + "," + grid
-                        .lat + ");<br/>";
+                var overlay;
+                if (overlays[i].drawingMode === 'marker') {
+                    overlay = overlays[i].point;
+                    $("resultShape").innerHTML = $("resultShape").innerHTML + '点坐标:<br/>';
+                    $("resultShape").innerHTML = $("resultShape").innerHTML + "中心点:(" + overlay.lng + "," + overlay .lat + ");<br/><hr>";
+                    
+                } else {
+                    overlay = overlays[i].getPath();
+                    if (overlays[i].drawingMode === "polyline") {
+                        $("resultShape").innerHTML = $("resultShape").innerHTML + '折线坐标:<br/>';
+                    } else {
+                        $("resultShape").innerHTML = $("resultShape").innerHTML + overlay.length + '边形坐标:<br/>';
+                    }
+                    for (var j = 0; j < overlay.length; j++) {
+                        var grid = overlay[j];
+                        $("resultShape").innerHTML = $("resultShape").innerHTML + (j + 1) + ":(" + grid.lng + "," + grid .lat + ");<br/>";
+                    }
+                    $("resultShape").innerHTML = $("resultShape").innerHTML + '<hr/>';
                 }
             }
         }
@@ -265,19 +281,6 @@
             for (var i = 0; i < overlays.length; i++) {
                 state == 'enable' ? overlays[i].enableEditing() : overlays[i].disableEditing();
             }
-        }
-
-        function showPolygon(btn) {
-            var polygon = new BMap.Polygon([
-                new BMap.Point(113.941853, 22.530777),
-                new BMap.Point(113.940487, 22.527789),
-                new BMap.Point(113.94788, 22.527597),
-                new BMap.Point(113.947925, 22.530618)
-            ], styleOptions); //创建多边形
-            map.addOverlay(polygon); //增加多边形
-            // overlays.push(polygon); //是否把该图像加入到编辑和删除行列
-            btn.setAttribute('disabled', 'false');
-            showText();
         }
 
         function showText() {
