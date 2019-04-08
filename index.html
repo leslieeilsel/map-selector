@@ -84,7 +84,7 @@
             margin-right: 100px !important;
         } */
     </style>
-    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=rdxXZeTCdtOAVL3DlNzYkXas9nR21KNu">
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=rdxXZeTCdtOAVL3DlNzYkXas9nR21KNu">
     </script>
     <!--加载鼠标绘制工具-->
     <script type="text/javascript" src="./assets/js/DrawingManager_min.js"></script>
@@ -138,46 +138,18 @@
             </div>
             <div class="row">
                 <div class="col-lg-12 mt-3">
-                    <input type="button" class="btn btn-primary" value="开启点、线、面编辑" onclick="Editing('enable')" />
-                    <input type="button" class="btn btn-primary" value="关闭点、线、面编辑" onclick="Editing('disable')" />
+                    <input type="button" class="btn btn-primary" value="开启点、线、面编辑" onclick="isEdit('enable')" />
+                    <input type="button" class="btn btn-primary" value="关闭点、线、面编辑" onclick="isEdit('disable')" />
                 </div>
-            </div>
-
-            <!-- <input type="button" value="画多边形" onclick="draw(BMAP_DRAWING_POLYGON)" />
-            <input type="button" value="画矩形" onclick="draw(BMAP_DRAWING_RECTANGLE)" />
-            <input type="button" value="画线" onclick="draw(BMAP_DRAWING_POLYLINE)" /> -->
-            <!-- <input type="button"  value="画点" onclick="draw(BMAP_DRAWING_MARKER)" />-->
-            <span></span>
-            <div class="row">
-                <div class="col-lg-12 mt-3">
-                    <p class="text-left mb-0">右键获取任意点的经纬度</p>
-                </div>
-                <div class="col-lg-12 mt-0">
-                    <div class="input-group mb-3">
-                        <input type="text" id="pointGeo" class="form-control" placeholder="经纬度">
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-info" onclick="copyGeo()">复制</button>
-                        </div>
-                    </div>
-                    <!-- <div class="input-group">
-                        <input id="pointGeo" type="text" class="form-control" placeholder="经纬度" value="">
-                        <span class="input-group-btn">
-                            <button class="btn btn-default" type="button" onclick="copyGeo()">复制</button>
-                        </span>
-                    </div> -->
-                </div>
-
             </div>
         </div>
+        <hr class="mb-0">
         <div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto; display:none;z-index: 99">
         </div>
-        <div id="resultShape"></div>
-        <div id="shape">坐标为</div>
+        <div class="row">
+            <div id="resultShape" class="col-lg-12 mt-3"></div>
+        </div>
     </div>
-    <!-- <div id="allmap" style="overflow:hidden;zoom:1;position:relative;">
-    </div>
-    <div id="rightSpace">
-    </div> -->
 
     <script type="text/javascript">
         function $(id) {
@@ -203,15 +175,20 @@
             e.overlay.drawingMode = e.drawingMode;
             overlays.push(e.overlay);
         };
-        var styleOptions = {
-            strokeColor: "#f85007", // 边线颜色。
-            fillColor: "#f85007", // 填充颜色。当参数为空时，圆形将没有填充效果。
-            fillOpacity: 0.1, // 填充的透明度，取值范围0 - 1。
+        var polygonStyleOptions = {
+            strokeColor: "#f44336", // 边线颜色。
+            fillColor: "#f44336", // 填充颜色。当参数为空时，圆形将没有填充效果。
+            fillOpacity: 0.2, // 填充的透明度，取值范围0 - 1。
             strokeWeight: 4, // 边线的宽度，以像素为单位。
             strokeOpacity: 0.8, // 边线透明度，取值范围0 - 1。
             strokeStyle: 'solid' // 边线的样式，solid或dashed。
         }
-
+        var polylineStyleOptions = {
+            strokeColor: "#2196f3", // 边线颜色。
+            strokeWeight: 4, // 边线的宽度，以像素为单位。
+            strokeOpacity: 0.8, // 边线透明度，取值范围0 - 1。
+            strokeStyle: 'solid' // 边线的样式，solid或dashed。
+        }
         //实例化鼠标绘制工具
         var drawingManager = new BMapLib.DrawingManager(map, {
             isOpen: false, // 是否开启绘制模式
@@ -221,36 +198,20 @@
                 offset: new BMap.Size(5, 5), // 偏离值
                 drawingModes: [BMAP_DRAWING_MARKER, BMAP_DRAWING_POLYLINE, BMAP_DRAWING_POLYGON], // 设置只显示画折线和多边形
             },
-            polylineOptions: styleOptions, // 线的样式
-            polygonOptions: styleOptions, // 多边形的样式
+            polylineOptions: polylineStyleOptions, // 折线样式
+            polygonOptions: polygonStyleOptions, // 多边形样式
         });
 
         // 添加鼠标绘制工具监听事件，用于获取绘制结果
         drawingManager.addEventListener('overlaycomplete', overlaycomplete);
 
-        // 鼠标右键事件
-        map.addEventListener("rightclick", function (e) {
-            // if (confirm(e.point.lng + "," + e.point.lat)) {
-            document.getElementById("pointGeo").value = e.point.lng + "," + e.point.lat;
+        // function draw(type) {
+        //     drawingManager.open();
+        //     Editing('disable');
+        //     drawingManager.setDrawingMode(type);
+        // }
 
-            // $("#pointGeo").val(e.point.lng + "," + e.point.lat);
-            $("shape").innerHTML = $("shape").innerHTML + " <br/>(" + e.point.lng + "," + e.point.lat + ")";
-            // }
-        });
-
-        // 复制点坐标
-        function copyGeo() {
-            var point = document.getElementById("pointGeo");
-            point.select(); // 选择对象
-            document.execCommand("Copy"); // 执行浏览器复制命令
-            alert("复制成功！");
-        }
-
-        function draw(type) {
-            drawingManager.open();
-            drawingManager.setDrawingMode(type);
-        }
-
+        // 清除全部
         function clearAll() {
             for (var i = 0; i < overlays.length; i++) {
                 map.removeOverlay(overlays[i]);
@@ -258,6 +219,7 @@
             overlays.length = 0
         }
 
+        // 获取点坐标
         function getPoint() {
             $("resultShape").innerHTML = '';
             for (var i = 0; i < overlays.length; i++) {
@@ -283,6 +245,12 @@
             }
         }
 
+        // 是否开启编辑功能
+        function isEdit(state) {
+            Editing(state);
+            drawingManager.close();
+        }
+
         function Editing(state) {
             for (var i = 0; i < overlays.length; i++) {
                 if (overlays[i].drawingMode !== 'marker') {
@@ -306,7 +274,6 @@
             });
             map.addOverlay(label);
         }
-
 
         var ac = new BMap.Autocomplete( //建立一个自动完成的对象
             {
@@ -336,9 +303,7 @@
         ac.addEventListener("onconfirm", function (e) { //鼠标点击下拉列表后的事件
             var _value = e.item.value;
             myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
-            $("searchResultPanel").innerHTML = "onconfirm<br />index = " + e.item.index + "<br />myValue = " +
-                myValue;
-
+            $("searchResultPanel").innerHTML = "onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
             setPlace();
         });
 
