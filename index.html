@@ -84,8 +84,7 @@
             margin-right: 100px !important;
         } */
     </style>
-    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=rdxXZeTCdtOAVL3DlNzYkXas9nR21KNu">
-    </script>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=rdxXZeTCdtOAVL3DlNzYkXas9nR21KNu"></script>
     <!--加载鼠标绘制工具-->
     <script type="text/javascript" src="./assets/js/DrawingManager_min.js"></script>
     <link rel="stylesheet" href="./assets/css/DrawingManager_min.css" />
@@ -93,9 +92,7 @@
     <script type="text/javascript" src="./assets/js/SearchInfoWindow_min.js"></script>
     <link rel="stylesheet" href="./assets/css/SearchInfoWindow_min.css" />
 
-    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
     <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
-    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
 
     <!-- CSS -->
     <!-- Add Material font (Roboto) and Material icon as needed -->
@@ -108,9 +105,11 @@
     <link href="./assets/css/material.min.css" rel="stylesheet">
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
     <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
     <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script> -->
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
 
     <!-- Then Material JavaScript on top of Bootstrap JavaScript -->
     <script src="./assets/js/material.min.js"></script>
@@ -312,7 +311,7 @@
             function myFun() {
                 var pp = local.getResults().getPoi(0).point; //获取第一个智能搜索的结果
                 map.centerAndZoom(pp, 18);
-                map.addOverlay(new BMap.Marker(pp)); //添加标注
+                // map.addOverlay(new BMap.Marker(pp)); //添加标注
             }
             var local = new BMap.LocalSearch(map, { //智能搜索
                 onSearchComplete: myFun
