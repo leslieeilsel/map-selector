@@ -207,7 +207,7 @@
             drawingToolOptions: {
                 anchor: BMAP_ANCHOR_TOP_RIGHT, // 位置
                 offset: new BMap.Size(5, 5), // 偏离值
-                 // 设置显示标点、画折线、多边形
+                // 设置显示标点、画折线、多边形
                 drawingModes: [BMAP_DRAWING_MARKER, BMAP_DRAWING_POLYLINE, BMAP_DRAWING_POLYGON],
             },
             polylineOptions: polylineStyleOptions, // 折线样式
@@ -303,7 +303,8 @@
         ac.addEventListener("onconfirm", function (e) { //鼠标点击下拉列表后的事件
             var _value = e.item.value;
             myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
-            $("#searchResultPanel").html("onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue);
+            $("#searchResultPanel").html("onconfirm<br />index = " + e.item.index + "<br />myValue = " +
+                myValue);
             setPlace();
         });
 
@@ -323,8 +324,6 @@
         // 检查文件上传
         function check() {
             var objFile = document.getElementById("inputFile");
-            console.log(objFile.value);
-
             if (objFile.value === "") {
                 alert("未上传文件")
             }
@@ -342,8 +341,34 @@
         }
 
         function openFileInMap(geoJson) {
-            console.log(geoJson);
             // TODO:文件校验
+            clearAll(); // 清除所有覆盖物
+            $.each(geoJson.features, function (key, value) { //遍历键值对
+                var points = [];
+                if (value.geometry.type === 'LineString') {
+                    $.each(value.geometry.coordinates, function (k, v) {
+                        points.push(new BMap.Point(v[0], v[1]));
+                    });
+                    var polyline = new BMap.Polyline(points, {
+                        strokeColor: "blue",
+                        strokeWeight: 2,
+                        strokeOpacity: 0.5
+                    }); //创建折线
+                    map.addOverlay(polyline); //增加折线
+                } else if(value.geometry.type === 'Polygon') {
+                    $.each(value.geometry.coordinates, function (k, v) {
+                        $.each(v, function (i, item) {
+                            points.push(new BMap.Point(item[0], item[1]));
+                        });
+                    });
+                    var polygon = new BMap.Polygon(points, {
+                        strokeColor: "blue",
+                        strokeWeight: 2,
+                        strokeOpacity: 0.5
+                    }); //创建多边形
+                    map.addOverlay(polygon); //增加多边形
+                }
+            });
         }
     </script>
 </body>
