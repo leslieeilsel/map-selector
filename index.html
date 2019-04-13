@@ -357,6 +357,7 @@
         function openFileInMap(geoJson) {
             // TODO:文件校验
             clearAll(); // 清除所有覆盖物
+            var allPoints = [];
             $.each(geoJson.features, function (key, value) { // 遍历键值对
                 var points = [];
                 if (value.geometry.type === 'LineString') {
@@ -382,7 +383,9 @@
                     }); // 创建多边形
                     map.addOverlay(polygon); // 增加多边形
                 }
+                allPoints.push.apply(allPoints, points);
             });
+            setZoom(allPoints);
         }
 
         function setDefaultValue() {
@@ -423,6 +426,13 @@
                 enableSnippets: true,
                 enableLiveAutocompletion: true
             });
+        }
+
+        function setZoom(allPoints) {
+            var view = map.getViewport(eval(allPoints));
+            var mapZoom = view.zoom;
+            var centerPoint = view.center;
+            map.centerAndZoom(centerPoint, mapZoom);
         }
     </script>
 </body>
