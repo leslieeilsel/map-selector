@@ -179,7 +179,7 @@
         // 加载Ace代码编辑器
         loadCodeEdit();
         // 设置编辑器默认值
-        setDefaultValue();
+        setCodeDefaultValue();
         // 百度地图API功能
         var map = new BMap.Map('map', {
             enableMapClick: false, // 环境物不可点击
@@ -254,7 +254,6 @@
                     $("#resultShape").html($("#resultShape").html() + '点坐标:<br/>')
                     $("#resultShape").html($("#resultShape").html() + "中心点:(" + overlay.lng + "," + overlay.lat +
                         ");<br/><hr>")
-
                 } else {
                     overlay = overlays[i].getPath();
                     if (overlays[i].drawingMode === "polyline") {
@@ -347,15 +346,16 @@
                 var reader = new FileReader(); // 新建一个FileReader
                 reader.readAsText(files[0], "UTF-8"); // 读取文件 
                 reader.onload = function (evt) { // 读取完文件之后会回来这里
-                    var fileJson = JSON.parse(evt.target.result); // 读取文件内容
-                    editor.session.setValue(JSON.stringify(fileJson, null, 2));
-                    openFileInMap(fileJson);
+                    if (isJsonString(evt.target.result) === true) {
+                        var fileJson = JSON.parse(evt.target.result); // 读取文件内容
+                        editor.session.setValue(JSON.stringify(fileJson, null, 2));
+                        openFileInMap(fileJson);
+                    }
                 }
             }
         }
 
         function openFileInMap(geoJson) {
-            // TODO:文件校验
             clearAll(); // 清除所有覆盖物
             var allPoints = [];
             $.each(geoJson.features, function (key, value) { // 遍历键值对
@@ -388,7 +388,7 @@
             setZoom(allPoints);
         }
 
-        function setDefaultValue() {
+        function setCodeDefaultValue() {
             var initJson = {
                 "type": "FeatureCollection",
                 "features": []
@@ -399,26 +399,20 @@
         function loadCodeEdit() {
             // 初始化对象
             editor = ace.edit("code");
-
             // 设置风格和语言（更多风格和语言，请到github上相应目录查看）
             theme = "monokai"
             language = "json"
             editor.setTheme("ace/theme/" + theme);
             editor.session.setMode("ace/mode/" + language);
-
             // 字体大小
             editor.setFontSize(12);
-
             // 设置只读（true时只读，用于展示代码）
             editor.setReadOnly(true);
-
             // 设置辅助线条
             editor.setHighlightActiveLine(true);
-
             // 自动换行,设置为off关闭
             editor.setOption("wrap", "off");
             editor.setOverwrite(true);
-
             // 启用提示菜单
             ace.require("ace/ext/language_tools");
             editor.setOptions({
@@ -428,11 +422,25 @@
             });
         }
 
+        // 动态设置地图缩放级别
         function setZoom(allPoints) {
             var view = map.getViewport(eval(allPoints));
             var mapZoom = view.zoom;
             var centerPoint = view.center;
             map.centerAndZoom(centerPoint, mapZoom);
+        }
+
+        // 校验是否为Json数据
+        function isJsonString(str) {
+            try {
+                if (typeof JSON.parse(str) == "object") {
+                    return true;
+                }
+            } catch (e) {
+                setCodeDefaultValue();
+                alert('请上传GeoJSON格式的文件');
+            }
+            return false;
         }
     </script>
 </body>
