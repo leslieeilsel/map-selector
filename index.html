@@ -78,36 +78,12 @@
             opacity: 1 !important;
         }
 
-        pre {
-            outline: 1px solid #ccc;
-            padding: 5px;
-            margin: 5px;
-        }
-
-        .string {
-            color: green;
-        }
-
-        .number {
-            color: darkorange;
-        }
-
-        .boolean {
-            color: blue;
-        }
-
-        .null {
-            color: magenta;
-        }
-
-        .key {
-            color: red;
-        }
-
-        #resultJson {
+        #code {
             width: 100%;
+            min-height: 500px;
             height: 500px;
         }
+
         /* .BMap_vectex {
             width: 8px !important;
             height: 8px !important;
@@ -122,6 +98,9 @@
     <!--加载鼠标绘制工具-->
     <script type="text/javascript" src="./assets/js/DrawingManager_min.js"></script>
     <link rel="stylesheet" href="./assets/css/DrawingManager_min.css" />
+    <!-- 加载Ace Edit -->
+    <script src="https://cdn.bootcss.com/ace/1.4.3/ace.js"></script>
+    <script src="https://cdn.bootcss.com/ace/1.4.3/ext-language_tools.js"></script>
     <!--加载检索信息窗口-->
     <script type="text/javascript" src="./assets/js/SearchInfoWindow_min.js"></script>
     <link rel="stylesheet" href="./assets/css/SearchInfoWindow_min.css" />
@@ -185,9 +164,7 @@
         </div>
         <div class="row">
             <div id="resultShape" class="col-lg-12 mt-3"></div>
-            <textarea id="resultJson">
-
-            </textarea>
+            <div id="code"></div>
         </div>
     </div>
 
@@ -200,6 +177,11 @@
     <script src="./assets/js/material.min.js"></script>
 
     <script type="text/javascript">
+        var editor = {};
+        // 加载Ace代码编辑器
+        loadCodeEdit();
+        // 设置编辑器默认值
+        setDefaultValue();
         // 百度地图API功能
         var map = new BMap.Map('map', {
             enableMapClick: false, // 环境物不可点击
@@ -233,7 +215,7 @@
             strokeOpacity: 0.8, // 边线透明度，取值范围0 - 1。
             strokeStyle: 'solid' // 边线的样式，solid或dashed。
         }
-        //实例化鼠标绘制工具
+        // 实例化鼠标绘制工具
         var drawingManager = new BMapLib.DrawingManager(map, {
             isOpen: false, // 是否开启绘制模式
             enableDrawingTool: true, // 是否显示工具栏
@@ -360,16 +342,15 @@
             if (objFile.value === "") {
                 alert("未上传文件")
             }
-            var files = $('#inputFile').prop('files'); //获取到文件列表
+            var files = $('#inputFile').prop('files'); // 获取到文件列表
             if (files.length === 0) {
                 alert('请选择文件');
             } else {
-                var reader = new FileReader(); //新建一个FileReader
-                reader.readAsText(files[0], "UTF-8"); //读取文件 
-                reader.onload = function (evt) { //读取完文件之后会回来这里
+                var reader = new FileReader(); // 新建一个FileReader
+                reader.readAsText(files[0], "UTF-8"); // 读取文件 
+                reader.onload = function (evt) { // 读取完文件之后会回来这里
                     var fileJson = JSON.parse(evt.target.result); // 读取文件内容
-                    document.querySelector('#resultJson').value=JSON.stringify(fileJson,null,4);
-                    // $('#resultJson').html(syntaxHighlight(fileJson));
+                    editor.session.setValue(JSON.stringify(fileJson, null, 2));
                     openFileInMap(fileJson);
                 }
             }
@@ -378,7 +359,7 @@
         function openFileInMap(geoJson) {
             // TODO:文件校验
             clearAll(); // 清除所有覆盖物
-            $.each(geoJson.features, function (key, value) { //遍历键值对
+            $.each(geoJson.features, function (key, value) { // 遍历键值对
                 var points = [];
                 if (value.geometry.type === 'LineString') {
                     $.each(value.geometry.coordinates, function (k, v) {
@@ -388,8 +369,8 @@
                         strokeColor: "blue",
                         strokeWeight: 2,
                         strokeOpacity: 0.5
-                    }); //创建折线
-                    map.addOverlay(polyline); //增加折线
+                    }); // 创建折线
+                    map.addOverlay(polyline); // 增加折线
                 } else if (value.geometry.type === 'Polygon') {
                     $.each(value.geometry.coordinates, function (k, v) {
                         $.each(v, function (i, item) {
@@ -400,34 +381,50 @@
                         strokeColor: "blue",
                         strokeWeight: 2,
                         strokeOpacity: 0.5
-                    }); //创建多边形
-                    map.addOverlay(polygon); //增加多边形
+                    }); // 创建多边形
+                    map.addOverlay(polygon); // 增加多边形
                 }
             });
         }
 
-        function syntaxHighlight(json) {
-            if (typeof json != 'string') {
-                json = JSON.stringify(json, undefined, 2);
-            }
-            json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
-            return json.replace(
-                /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-                function (match) {
-                    var cls = 'number';
-                    if (/^"/.test(match)) {
-                        if (/:$/.test(match)) {
-                            cls = 'key';
-                        } else {
-                            cls = 'string';
-                        }
-                    } else if (/true|false/.test(match)) {
-                        cls = 'boolean';
-                    } else if (/null/.test(match)) {
-                        cls = 'null';
-                    }
-                    return '<span class="' + cls + '">' + match + '</span>';
-                });
+        function setDefaultValue() {
+            var initJson = {
+                "type": "FeatureCollection",
+                "features": []
+            };
+            editor.session.setValue(JSON.stringify(initJson, null, 2));
+        }
+
+        function loadCodeEdit() {
+            // 初始化对象
+            editor = ace.edit("code");
+
+            // 设置风格和语言（更多风格和语言，请到github上相应目录查看）
+            theme = "monokai"
+            language = "json"
+            editor.setTheme("ace/theme/" + theme);
+            editor.session.setMode("ace/mode/" + language);
+
+            // 字体大小
+            editor.setFontSize(12);
+
+            // 设置只读（true时只读，用于展示代码）
+            editor.setReadOnly(true);
+
+            // 设置辅助线条
+            editor.setHighlightActiveLine(true);
+
+            // 自动换行,设置为off关闭
+            editor.setOption("wrap", "off");
+            editor.setOverwrite(true);
+
+            // 启用提示菜单
+            ace.require("ace/ext/language_tools");
+            editor.setOptions({
+                enableBasicAutocompletion: true,
+                enableSnippets: true,
+                enableLiveAutocompletion: true
+            });
         }
     </script>
 </body>
