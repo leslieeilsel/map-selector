@@ -78,6 +78,36 @@
             opacity: 1 !important;
         }
 
+        pre {
+            outline: 1px solid #ccc;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .string {
+            color: green;
+        }
+
+        .number {
+            color: darkorange;
+        }
+
+        .boolean {
+            color: blue;
+        }
+
+        .null {
+            color: magenta;
+        }
+
+        .key {
+            color: red;
+        }
+
+        #resultJson {
+            width: 100%;
+            height: 500px;
+        }
         /* .BMap_vectex {
             width: 8px !important;
             height: 8px !important;
@@ -155,6 +185,9 @@
         </div>
         <div class="row">
             <div id="resultShape" class="col-lg-12 mt-3"></div>
+            <textarea id="resultJson">
+
+            </textarea>
         </div>
     </div>
 
@@ -335,6 +368,8 @@
                 reader.readAsText(files[0], "UTF-8"); //读取文件 
                 reader.onload = function (evt) { //读取完文件之后会回来这里
                     var fileJson = JSON.parse(evt.target.result); // 读取文件内容
+                    document.querySelector('#resultJson').value=JSON.stringify(fileJson,null,4);
+                    // $('#resultJson').html(syntaxHighlight(fileJson));
                     openFileInMap(fileJson);
                 }
             }
@@ -355,7 +390,7 @@
                         strokeOpacity: 0.5
                     }); //创建折线
                     map.addOverlay(polyline); //增加折线
-                } else if(value.geometry.type === 'Polygon') {
+                } else if (value.geometry.type === 'Polygon') {
                     $.each(value.geometry.coordinates, function (k, v) {
                         $.each(v, function (i, item) {
                             points.push(new BMap.Point(item[0], item[1]));
@@ -369,6 +404,30 @@
                     map.addOverlay(polygon); //增加多边形
                 }
             });
+        }
+
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                json = JSON.stringify(json, undefined, 2);
+            }
+            json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            return json.replace(
+                /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+                function (match) {
+                    var cls = 'number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'key';
+                        } else {
+                            cls = 'string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'null';
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
         }
     </script>
 </body>
