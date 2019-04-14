@@ -12,12 +12,6 @@ html {
     overflow: hidden;
 }
 
-#rightSpace {
-    width: 30%;
-    float: left;
-    overflow: scroll;
-}
-
 #result {
     width: 100%;
     font-size: 12px;
@@ -62,19 +56,12 @@ li {
     height: 100%;
 }
 
-#l-map {
-    height: 300px;
-    width: 100%;
-}
-
 .custom-file-input {
     opacity: 1 !important;
 }
 
 #code {
     width: 100%;
-    min-height: 500px;
-    height: 500px;
 }
 
 /* .BMap_vectex {
