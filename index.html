@@ -370,6 +370,8 @@
                         strokeOpacity: 0.5
                     }); // 创建折线
                     map.addOverlay(polyline); // 增加折线
+                    polyline.drawingMode = 'polyline';
+                    overlays.push(polyline);
                 } else if (value.geometry.type === 'Polygon') {
                     $.each(value.geometry.coordinates, function (k, v) {
                         $.each(v, function (i, item) {
@@ -382,6 +384,8 @@
                         strokeOpacity: 0.5
                     }); // 创建多边形
                     map.addOverlay(polygon); // 增加多边形
+                    polygon.drawingMode = 'polygon';
+                    overlays.push(polygon);
                 }
                 allPoints.push.apply(allPoints, points);
             });
