@@ -364,11 +364,7 @@
                     $.each(value.geometry.coordinates, function (k, v) {
                         points.push(new BMap.Point(v[0], v[1]));
                     });
-                    var polyline = new BMap.Polyline(points, {
-                        strokeColor: "blue",
-                        strokeWeight: 2,
-                        strokeOpacity: 0.5
-                    }); // 创建折线
+                    var polyline = new BMap.Polyline(points, value.properties); // 创建折线
                     map.addOverlay(polyline); // 增加折线
                     polyline.drawingMode = 'polyline';
                     overlays.push(polyline);
@@ -378,11 +374,7 @@
                             points.push(new BMap.Point(item[0], item[1]));
                         });
                     });
-                    var polygon = new BMap.Polygon(points, {
-                        strokeColor: "blue",
-                        strokeWeight: 2,
-                        strokeOpacity: 0.5
-                    }); // 创建多边形
+                    var polygon = new BMap.Polygon(points, value.properties); // 创建多边形
                     map.addOverlay(polygon); // 增加多边形
                     polygon.drawingMode = 'polygon';
                     overlays.push(polygon);
