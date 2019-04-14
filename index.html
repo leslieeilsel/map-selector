@@ -312,10 +312,11 @@
         function loadCodeEdit() {
             // 初始化对象
             editor = ace.edit("code");
-            // 设置风格和语言（更多风格和语言，请到github上相应目录查看）
-            theme = "monokai"
-            language = "json"
+            // 设置主题风格（支持主题列表：https://github.com/ajaxorg/ace/tree/master/lib/ace/theme）
+            theme = "github"
             editor.setTheme("ace/theme/" + theme);
+            // 设置语言模式（支持语言列表：https://github.com/ajaxorg/ace/tree/master/lib/ace/mode）
+            language = "json"
             editor.session.setMode("ace/mode/" + language);
             // 字体大小
             editor.setFontSize(12);
