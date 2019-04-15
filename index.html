@@ -74,6 +74,7 @@
         </div>
         <div class="row outPut">
             <div class="col-lg-12 mt-3">
+                <input type="button" class="btn btn-dark" value="保存文件" onclick="outPutBdMapJson()" />
                 <input type="button" class="btn btn-dark" value="另存为 高德地图 坐标" onclick="outPutGdMapJson()" />
                 <input type="button" class="btn btn-dark" value="另存为 GPS 坐标" onclick="" disabled />
             </div>
@@ -125,7 +126,7 @@
             strokeStyle: 'solid' // 边线的样式，solid或dashed。
         }
         var polylineStyleOptions = {
-            strokeColor: "#2196f3", // 边线颜色。
+            strokeColor: "#3a6bdb", // 边线颜色。
             strokeWeight: 4, // 边线的宽度，以像素为单位。
             strokeOpacity: 0.8, // 边线透明度，取值范围0 - 1。
             strokeStyle: 'solid' // 边线的样式，solid或dashed。
@@ -163,9 +164,17 @@
 
         // 获取点坐标
         function getPoint() {
-            $("#resultShape").html('');
+            var features = [];
             for (var i = 0; i < overlays.length; i++) {
                 var overlay;
+                var feature = {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": []
+                    }
+                };
                 if (overlays[i].drawingMode === 'marker') {
                     overlay = overlays[i].point;
                     $("#resultShape").html($("#resultShape").html() + '点坐标:<br/>')
@@ -173,19 +182,30 @@
                         ");<br/><hr>")
                 } else {
                     overlay = overlays[i].getPath();
-                    if (overlays[i].drawingMode === "polyline") {
-                        $("#resultShape").html($("#resultShape").html() + '折线坐标:<br/>');
-                    } else {
-                        $("#resultShape").html($("#resultShape").html() + overlay.length + '边形坐标:<br/>');
+                    feature.properties = {
+                        "name": overlays[i].name,
+                        "strokeColor": overlays[i].getStrokeColor(),
+                        "strokeWidth": overlays[i].getStrokeWeight(),
+                        "strokeStyle": overlays[i].getStrokeStyle(),
+                        "strokeOpacity": overlays[i].getStrokeOpacity(),
+                        "fillColor": overlays[i].getFillColor(),
+                        "fillOpacity": overlays[i].getFillOpacity()
                     }
+                    feature.geometry.type = overlays[i].drawingMode === "polyline" ? 'LineString' : 'Polygon';
+
+                    var points = [];
                     for (var j = 0; j < overlay.length; j++) {
-                        var grid = overlay[j];
-                        $("#resultShape").html($("#resultShape").html() + (j + 1) + ":(" + grid.lng + "," + grid.lat +
-                            ");<br/>");
+                        points.push([overlay[j].lng, overlay[j].lat]);
                     }
-                    $("#resultShape").html($("#resultShape").html() + '<hr/>');
+                    feature.geometry.coordinates = overlays[i].drawingMode === "polyline" ? points : [points];
+                    features.push(feature);
                 }
             }
+            var geoJson = {
+                "type": "FeatureCollection",
+                "features": features
+            }
+            editor.session.setValue(JSON.stringify(geoJson, null, 2));
         }
 
         // 是否开启编辑功能
@@ -204,13 +224,13 @@
             }
         }
 
-        var ac = new BMap.Autocomplete( //建立一个自动完成的对象
+        var ac = new BMap.Autocomplete( // 建立一个自动完成的对象
             {
                 "input": "suggestId",
                 "location": map
             });
 
-        ac.addEventListener("onhighlight", function (e) { //鼠标放在下拉列表上的事件
+        ac.addEventListener("onhighlight", function (e) { // 鼠标放在下拉列表上的事件
             var str = "";
             var _value = e.fromitem.value;
             var value = "";
@@ -229,7 +249,7 @@
         });
 
         var myValue;
-        ac.addEventListener("onconfirm", function (e) { //鼠标点击下拉列表后的事件
+        ac.addEventListener("onconfirm", function (e) { // 鼠标点击下拉列表后的事件
             var _value = e.item.value;
             myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
             $("#searchResultPanel").html("onconfirm<br />index = " + e.item.index + "<br />myValue = " +
@@ -238,13 +258,13 @@
         });
 
         function setPlace() {
-            map.clearOverlays(); //清除地图上所有覆盖物
+            map.clearOverlays(); // 清除地图上所有覆盖物
             function myFun() {
-                var pp = local.getResults().getPoi(0).point; //获取第一个智能搜索的结果
+                var pp = local.getResults().getPoi(0).point; // 获取第一个智能搜索的结果
                 map.centerAndZoom(pp, 18);
-                // map.addOverlay(new BMap.Marker(pp)); //添加标注
+                // map.addOverlay(new BMap.Marker(pp)); // 添加标注
             }
-            var local = new BMap.LocalSearch(map, { //智能搜索
+            var local = new BMap.LocalSearch(map, { // 智能搜索
                 onSearchComplete: myFun
             });
             local.search(myValue);
@@ -284,6 +304,7 @@
                     var polyline = new BMap.Polyline(points, value.properties); // 创建折线
                     map.addOverlay(polyline); // 增加折线
                     polyline.drawingMode = 'polyline';
+                    polyline.name = value.properties.name;
                     overlays.push(polyline);
                 } else if (value.geometry.type === 'Polygon') {
                     $.each(value.geometry.coordinates, function (k, v) {
@@ -294,6 +315,7 @@
                     var polygon = new BMap.Polygon(points, value.properties); // 创建多边形
                     map.addOverlay(polygon); // 增加多边形
                     polygon.drawingMode = 'polygon';
+                    polygon.name = value.properties.name;
                     overlays.push(polygon);
                 }
                 allPoints.push.apply(allPoints, points);
@@ -378,11 +400,20 @@
                 '&coordsys=baidu&output=json&key=86a30535207aa2d5fc6d2aec25c26b12',
                 function (data) {
                     if ('download' in document.createElement('a')) {
-                        funDownload(JSON.stringify(data), 'testInfo.json');
+                        funDownload(JSON.stringify(data), 'GaoDeGeoJson.json');
                     } else {
                         alert('浏览器不支持');
                     }
                 });
+        }
+
+        function outPutBdMapJson() {
+            var data = editor.getValue();
+            if ('download' in document.createElement('a')) {
+                funDownload(data, 'BaiDuGeoJson.json');
+            } else {
+                alert('浏览器不支持');
+            }
         }
 
         // 下载文件方法
