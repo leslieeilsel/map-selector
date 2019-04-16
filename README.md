@@ -10,6 +10,14 @@
 - 百度地图 JavaScript API
 - 百度地图 鼠标绘制工具条库
 
+### Usage
+
+```bash
+git clone https://github.com/leslieeilsel/BaiduMapTool.git
+
+# 在浏览器中打开index.html即可
+```
+
 ### TODO
 
 - [ ] BUG修复 
