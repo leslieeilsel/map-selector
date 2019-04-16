@@ -6,7 +6,7 @@
 
 - jQuery
 - Material based on Bootstrap v4
-- ACE Editor、
+- ACE Editor
 - 百度地图 JavaScript API
 - 百度地图 鼠标绘制工具条库
 
