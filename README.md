@@ -77,7 +77,7 @@ git clone https://github.com/leslieeilsel/BaiduMapTool.git
       };
   }
   ```
-  如下是php版本的算法
+  以下是php版本的算法
   
   ```shell
   https://beltxman.com/archives/1628.html
