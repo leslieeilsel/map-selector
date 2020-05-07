@@ -20,23 +20,23 @@ git clone https://github.com/leslieeilsel/BaiduMapTool.git
 
 ### TODO
 
-- [ ] BUG修复 
+- [ ] BUG 修复 
 - [ ] 转化为高德地图坐标
-- [ ] 转化为GPS坐标
-- [ ] UI优化
+- [ ] 转化为 GPS 坐标
+- [ ] UI 优化
 - [ ] 代码优化
-- [ ] Vue版本
-- [ ] React版本
+- [ ] Vue 版本
+- [ ] React 版本
 
 ### 坐标转化
 
-- 百度官方API
+- 百度官方 API
 
   ```shell
   http://lbsyun.baidu.com/index.php?title=webapi/guide/changeposition
   ```
 
-- 高德官方API
+- 高德官方 API
 
   ```shell
   https://lbs.amap.com/api/webservice/guide/api/convert/
@@ -44,7 +44,7 @@ git clone https://github.com/leslieeilsel/BaiduMapTool.git
 
 - 自定义算法
 
-  百度、高德提供的坐标转换是HTTP接口，单次响应时间在100ms左右。
+  百度、高德提供的坐标转换是 HTTP 接口，单次响应时间在 100ms 左右。
 
   如果请求次数不多，这样的延迟可以忽略。
 
@@ -77,7 +77,7 @@ git clone https://github.com/leslieeilsel/BaiduMapTool.git
       };
   }
   ```
-  以下是php版本的算法
+  以下是 PHP 版本的算法
   
   ```shell
   https://beltxman.com/archives/1628.html
