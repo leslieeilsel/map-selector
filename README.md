@@ -21,12 +21,9 @@ git clone https://github.com/leslieeilsel/BaiduMapTool.git
 ### TODO
 
 - [ ] BUG 修复 
-- [ ] 转化为高德地图坐标
-- [ ] 转化为 GPS 坐标
-- [ ] UI 优化
-- [ ] 代码优化
-- [ ] Vue 版本
-- [ ] React 版本
+- [ ] 支持转化为高德地图坐标
+- [ ] 支持转化为 GPS 坐标
+- [ ] 页面使用 tailwindcss 重构
 
 ### 坐标转化
 
